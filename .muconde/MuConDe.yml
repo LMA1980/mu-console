@@ -2,8 +2,8 @@ version: "1"
 service: "muconsole"
 
 target_nodes:
-  - "worker-riscv64"
   - "node-a"
+  - "node-b"
 
 lease_ttl_seconds: 300
 warmup_timeout_seconds: 30
@@ -14,8 +14,8 @@ integration_tests: "all"
 
 deployment:
   target_nodes:
-    - "worker-riscv64"
     - "node-a"
+    - "node-b"
   web_root: "/var/www/muconsole"
   artifact: "dist"
 
