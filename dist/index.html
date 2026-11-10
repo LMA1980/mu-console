@@ -26,6 +26,18 @@
         src: url("/fonts/HurmitNerdFontMono-Bold.woff2?v=e814bf815e") format("woff2");
       }
       @font-face {
+        font-family: "Hurmit Nerd Font Mono";
+        font-weight: 400;
+        font-display: block;
+        src: url("/fonts/HurmitNerdFontMono-Regular.woff2?v=e814bf815e") format("woff2");
+      }
+      @font-face {
+        font-family: "Hurmit Nerd Font Mono";
+        font-weight: 700;
+        font-display: block;
+        src: url("/fonts/HurmitNerdFontMono-Bold.woff2?v=e814bf815e") format("woff2");
+      }
+      @font-face {
         font-family: MuEtch;
         font-display: swap;
         src: url("/fonts/HeavyDataNerdFont-Regular.woff2?v=e814bf815e") format("woff2");
@@ -34,8 +46,8 @@
   </head>
   <body>
     <script type="module">
-      import init from '/muconsole-ui.js?v=922a02b6a8';
-      init('/muconsole-ui_bg.wasm?v=922a02b6a8').catch(err => {
+      import init from '/muconsole-ui.js?v=1cf682346b';
+      init('/muconsole-ui_bg.wasm?v=1cf682346b').catch(err => {
         console.error("Failed to initialize MuConsole WASM:", err);
         const container = document.createElement('div');
         container.style.cssText = 'padding: 24px; font: 16px monospace; color: #ff3b30; background: #120b07;';
