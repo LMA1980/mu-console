@@ -17,8 +17,8 @@ license = "AGPL-3.0-only"
 
 [workspace.dependencies]
 mu-console-protocol = { path = "protocol", version = "0.1.1" }
-mu-console-theme = { path = "theme", version = "0.1.0" }
-mu-console-layout = { path = "layout", version = "0.1.0" }
+mu-console-theme = { path = "theme", version = "0.1.1" }
+mu-console-layout = { path = "layout", version = "0.1.1" }
 mu-console-ui = { path = "ui", version = "0.1.1" }
 mu-console-data = { path = "data", version = "0.1.1" }
 

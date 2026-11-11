@@ -71,6 +71,13 @@ tasks:
     timeout_seconds: 900
     sandbox_profile: "default_ci"
 
+  dist-freshness-task:
+    tool: "cargo-test"
+    working_dir: "code"
+    args: ["-p", "mu-console-ui", "--test", "ux_gate", "--", "u24_dist_freshness"]
+    timeout_seconds: 300
+    sandbox_profile: "default_ci"
+
 stages:
   - id: fmt-check
     name: "Verify Rust Formatting (cargo fmt)"
@@ -152,6 +159,15 @@ stages:
     exclusive: false
     max_concurrent_per_node: 1
 
+  - id: dist-freshness-check
+    name: "Verify Distribution Freshness (dist/ WASM & Assets)"
+    tasks: ["dist-freshness-task"]
+    depends_on: ["wasm32-build", "test-check"]
+    tags: ["test"]
+    threads: 2
+    exclusive: false
+    max_concurrent_per_node: 1
+
 on_action:
   push:
     - fmt-check
@@ -163,6 +179,7 @@ on_action:
     - coverage-check
     - miri-check
     - wasm32-build
+    - dist-freshness-check
   pull_request:
     - fmt-check
     - docs-check
@@ -173,6 +190,7 @@ on_action:
     - coverage-check
     - miri-check
     - wasm32-build
+    - dist-freshness-check
   pullrequest:
     - fmt-check
     - docs-check
@@ -183,6 +201,7 @@ on_action:
     - coverage-check
     - miri-check
     - wasm32-build
+    - dist-freshness-check
   merge:
     - fmt-check
     - docs-check
@@ -193,6 +212,7 @@ on_action:
     - coverage-check
     - miri-check
     - wasm32-build
+    - dist-freshness-check
   tag:
     - fmt-check
     - docs-check
@@ -203,3 +223,4 @@ on_action:
     - coverage-check
     - miri-check
     - wasm32-build
+    - dist-freshness-check
