@@ -74,7 +74,7 @@ tasks:
   dist-freshness-task:
     tool: "cargo-test"
     working_dir: "code"
-    args: ["-p", "mu-console-ui", "--test", "ux_gate", "u24_dist_freshness"]
+    args: ["-p", "mu-console-ui", "--test", "ux_gate", "--", "u24_dist_freshness"]
     timeout_seconds: 300
     sandbox_profile: "default_ci"
 
