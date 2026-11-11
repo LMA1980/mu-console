@@ -21,3 +21,10 @@ stages:
     depends_on: ["clippy-check"]
     threads: 4
     run: "cargo build --target wasm32-unknown-unknown --release -p muconsole-ui -p muconsole-data -p muconsole-protocol -p muconsole-theme"
+
+  - id: muregist-publish
+    name: "Publish Release Artifact to MuRegist"
+    tags: ["build"]
+    depends_on: ["wasm32-build"]
+    threads: 2
+    run: "cargo publish --registry muregist --dry-run"
