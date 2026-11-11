@@ -12,3 +12,4 @@
 /.venv/
 # Concept SVGs embed base64 HeavyData.
 docs/design/*.svg
+.agents/
