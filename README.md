@@ -1,10 +1,6 @@
 # mu-console
 
 <p align="center">
-  <img src="docs/design/concept_desktop.png" alt="mu-console concept: Avionics Terminal desk at 1512×860" width="760"/>
-</p>
-
-<p align="center">
   <a href="https://hook.lma1980.duckdns.org/jobs"><img src="https://hook.lma1980.duckdns.org/badges/LMA1980/mu-console/status.svg" alt="CI Status"/></a>
   <a href="https://hook.lma1980.duckdns.org/jobs"><img src="https://hook.lma1980.duckdns.org/badges/LMA1980/mu-console/score.svg" alt="Quality Score"/></a>
   <a href="https://hook.lma1980.duckdns.org/jobs"><img src="https://hook.lma1980.duckdns.org/badges/LMA1980/mu-console/coverage.svg" alt="Coverage"/></a>
@@ -13,7 +9,7 @@
 
 ______________________________________________________________________
 
-Unified CI/CD console for **ActionRunner** (continuous integration) and **MuConDe** (continuous delivery). `mu-console` is an SVG-first "Avionics Terminal" UI driven by two WebAssembly modules: a UI module on the main thread and a data module in a dedicated Web Worker. It is hosted on `https://console.lma1980.duckdns.org` in parallel with `ActionRunner-web` on `https://hook.lma1980.duckdns.org` (where the GitHub `POST /webhook` endpoint permanently remains) so both clients can be evaluated side-by-side without loss of functionality.
+Unified CI/CD console for **ActionRunner** (continuous integration) and **MuConDe** (continuous delivery). `mu-console` is a technical wireframe UI (`WireframeSkin`, with `HtmlCoreSkin` arriving in Milestone 2) driven by two WebAssembly modules: a UI module on the main thread and a data module in a dedicated Web Worker. It is hosted on `https://console.lma1980.duckdns.org` in parallel with `ActionRunner-web` on `https://hook.lma1980.duckdns.org` (where the GitHub `POST /webhook` endpoint permanently remains) so both clients can be evaluated side-by-side without loss of functionality.
 
 See the [design specification](docs/design/README.md).
 
@@ -21,13 +17,13 @@ ______________________________________________________________________
 
 ## Workspace Submodules
 
-| Submodule                              | Target             | Licence                                       | Responsibility                                                                                                       |
-| -------------------------------------- | ------------------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| [`mu-console-protocol`](code/protocol) | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | `UiCommand` / `DataEvent`, view models, versioned postcard codec                                                     |
-| [`mu-console-theme`](code/theme)       | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Material tokens, 5×7 LCD glyphs, Nerd icon table, font metrics, dependency-free SVG writer and instrument generators |
-| [`mu-console-layout`](code/layout)     | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Breakpoints, frame solver, metric-aware CRT column grid (zero page scroll)                                           |
-| [`mu-console-ui`](code/ui)             | wasm (main thread) | AGPL-3.0-only                                 | Avionics terminal web frontend (WireframeSkin, HTML accessibility shell, WASM bootstrap)                             |
-| [`mu-console-data`](code/data)         | wasm (worker)      | AGPL-3.0-only                                 | Fetch, SSE client, normalized store, diffing, \<=10 Hz coalescing, offline snapshots                                 |
+| Submodule                              | Target             | Licence                                       | Responsibility                                                                                    |
+| -------------------------------------- | ------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [`mu-console-protocol`](code/protocol) | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | `UiCommand` / `DataEvent`, view models, versioned postcard codec                                  |
+| [`mu-console-theme`](code/theme)       | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Design tokens, Nerd icon glyph table, font metrics, dependency-free SVG writer, and WireframeSkin |
+| [`mu-console-layout`](code/layout)     | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Breakpoints, frame solver, metric-aware CRT column grid (zero page scroll)                        |
+| [`mu-console-ui`](code/ui)             | wasm (main thread) | AGPL-3.0-only                                 | Unified CI/CD console web frontend (`WireframeSkin` SVG renderer, HTML shell, WASM bootstrap)     |
+| [`mu-console-data`](code/data)         | wasm (worker)      | AGPL-3.0-only                                 | Fetch, SSE client, normalized store, diffing, \<=10 Hz coalescing, offline snapshots              |
 
 ## Building & Verification
 
@@ -43,7 +39,7 @@ ______________________________________________________________________
 
 ### Fonts
 
-Font binaries are **never committed**. `scripts/fetch-fonts.sh` downloads the pinned Nerd Fonts release zips (Hermit, OpenDyslexic, HeavyData), verifies their SHA-256, subsets them with `pyftsubset` (fontTools in a local `.venv`) using the code point list generated from `mu-console-theme`, checks that every required glyph survived, and writes WOFF2 files, each family's licence and a hash manifest into `dist/fonts/`.
+Font binaries are **never committed**. `scripts/fetch-fonts.sh` downloads the pinned Nerd Fonts release zips (Hermit, OpenDyslexic), verifies their SHA-256, subsets them with `pyftsubset` (fontTools in a local `.venv`) using the code point list generated from `mu-console-theme`, checks that every required glyph survived, and writes WOFF2 files, each family's licence and a hash manifest into `dist/fonts/`.
 
 ```bash
 ./scripts/fetch-fonts.sh
@@ -54,7 +50,6 @@ Font binaries are **never committed**. `scripts/fetch-fonts.sh` downloads the pi
 | ------------------------------------- | ------------------------------------------------------- |
 | Hurmit Nerd Font Mono (Regular, Bold) | SIL OFL 1.1 (Reserved Font Name "Hermit")               |
 | OpenDyslexicM Nerd Font Mono          | Bitstream Vera–style licence (`LICENSE.txt` in the zip) |
-| HeavyData Nerd Font                   | Vic Fieger freeware licence (not OSI/OFL)               |
 
 ## License
 

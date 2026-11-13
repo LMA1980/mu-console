@@ -12,7 +12,7 @@
 ## 2. Licensing & Font Binaries
 
 - **Two-Tier Licences**: `mu-console-protocol`, `mu-console-theme`, and `mu-console-layout` are `LGPL-3.0-only WITH LGPL-3.0-linking-exception` and must never depend on an AGPL crate. `mu-console-ui` and `mu-console-data` are `AGPL-3.0-only`.
-- **No Font Binaries in Git**: Never commit `*.woff2`, `*.ttf`, `*.otf` or SVGs with embedded fonts (concept renders embed base64 HeavyData). Fonts come only from the pinned, checksum-verified `scripts/fetch-fonts.sh`.
+- **No Font Binaries in Git**: Never commit `*.woff2`, `*.ttf`, `*.otf` or SVGs with embedded fonts. Fonts come only from the pinned, checksum-verified `scripts/fetch-fonts.sh`.
 - **Public Repository Hygiene**: Never commit internal hostnames, private IP addresses or internal DNS names. Use generic placeholders (`node-a`, `worker-riscv64`, `192.0.2.x`).
 
 ## 3. Layout & Rendering Invariants

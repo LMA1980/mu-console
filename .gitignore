@@ -3,13 +3,13 @@
 /dist/fonts/
 .DS_Store
 **/*.rs.bk
-# Font binaries are never committed (HeavyData is freeware, not OFL).
+# Font binaries are never committed.
 *.woff2
 *.woff
 *.ttf
 *.otf
 /.fonts-cache/
 /.venv/
-# Concept SVGs embed base64 HeavyData.
+# Generated design SVGs are never committed.
 docs/design/*.svg
 .agents/
