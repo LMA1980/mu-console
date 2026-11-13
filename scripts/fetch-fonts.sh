@@ -5,7 +5,7 @@
 #
 #   scripts/fetch-fonts.sh            # writes dist/fonts/*.woff2 + licences
 #
-# - Downloads pinned Nerd Fonts release zips (Hermit, OpenDyslexic, HeavyData)
+# - Downloads pinned Nerd Fonts release zips (Hermit, OpenDyslexic)
 #   from https://github.com/ryanoasis/nerd-fonts/releases.
 # - Verifies each zip against the SHA-256 recorded below (fails closed).
 # - Subsets with pyftsubset (fontTools, in a local venv) using the code point
@@ -14,8 +14,8 @@
 # - Writes WOFF2 subsets, each family's licence file and a manifest with
 #   content hashes (for ?v= cache busting) into dist/fonts/.
 #
-# Font binaries are NEVER committed (see .gitignore). HeavyData is Vic Fieger
-# freeware, not OFL: its licence ships next to the subset in dist/fonts/.
+# Font binaries are NEVER committed (see .gitignore); each family's licence
+# ships next to its subset in dist/fonts/.
 set -euo pipefail
 
 NF_VERSION="v3.5.1"
@@ -26,7 +26,6 @@ sha_for() {
   case "$1" in
     Hermit.zip) echo "fd78d27e2a4f1b92182ae56d2a6833028bc1314f629d773790516c7489602f3e" ;;
     OpenDyslexic.zip) echo "3b03b18b5c2436490d4f4df0d51f74cb0416ee74ddb189e3b698fd8b70807697" ;;
-    HeavyData.zip) echo "d8a15e63ebc3aa433fe4d11dfae10e06bd53060e2d9dec0f25043c0ee4507907" ;;
     *) echo "unknown asset $1" >&2; return 1 ;;
   esac
 }
@@ -36,6 +35,7 @@ CACHE="${ROOT}/.fonts-cache/${NF_VERSION}"
 OUT="${ROOT}/dist/fonts"
 VENV="${ROOT}/.venv"
 mkdir -p "${CACHE}" "${OUT}"
+rm -f "${OUT}"/*.woff2 "${OUT}"/*.txt
 
 sha256() {
   if command -v sha256sum >/dev/null 2>&1; then
@@ -70,7 +70,7 @@ extract() {
   [[ -s "$3" ]] || { echo "missing $2 in $1" >&2; exit 1; }
 }
 
-for z in Hermit.zip OpenDyslexic.zip HeavyData.zip; do fetch "$z"; done
+for z in Hermit.zip OpenDyslexic.zip; do fetch "$z"; done
 
 if [[ ! -x "${VENV}/bin/pyftsubset" ]]; then
   python3 -m venv "${VENV}"
@@ -78,9 +78,7 @@ if [[ ! -x "${VENV}/bin/pyftsubset" ]]; then
 fi
 
 CRT_UNICODES="$(cd "${ROOT}/code" && cargo run --quiet -p mu-console-theme --bin mu-console-subset-unicodes -- crt)"
-ETCH_UNICODES="$(cd "${ROOT}/code" && cargo run --quiet -p mu-console-theme --bin mu-console-subset-unicodes -- etch)"
 CRT_REQUIRED="$(cd "${ROOT}/code" && cargo run --quiet -p mu-console-theme --bin mu-console-subset-unicodes -- crt --required | tr '\n' ' ')"
-ETCH_REQUIRED="$(cd "${ROOT}/code" && cargo run --quiet -p mu-console-theme --bin mu-console-subset-unicodes -- etch --required | tr '\n' ' ')"
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "${WORK}"' EXIT
@@ -88,11 +86,9 @@ trap 'rm -rf "${WORK}"' EXIT
 extract Hermit.zip HurmitNerdFontMono-Regular.otf "${WORK}/HurmitNerdFontMono-Regular.otf"
 extract Hermit.zip HurmitNerdFontMono-Bold.otf "${WORK}/HurmitNerdFontMono-Bold.otf"
 extract OpenDyslexic.zip OpenDyslexicMNerdFontMono-Regular.otf "${WORK}/OpenDyslexicMNerdFontMono-Regular.otf"
-extract HeavyData.zip HeavyDataNerdFont-Regular.ttf "${WORK}/HeavyDataNerdFont-Regular.ttf"
 
 extract Hermit.zip LICENSE "${OUT}/Hurmit-LICENSE.txt"
 extract OpenDyslexic.zip LICENSE.txt "${OUT}/OpenDyslexicM-LICENSE.txt"
-extract HeavyData.zip "Vic Fieger License.txt" "${OUT}/HeavyData-Vic-Fieger-License.txt"
 
 # subset <src> <stem> <unicodes> <required>
 subset() {
@@ -121,7 +117,6 @@ PY
 subset "${WORK}/HurmitNerdFontMono-Regular.otf" HurmitNerdFontMono-Regular "${CRT_UNICODES}" "${CRT_REQUIRED}"
 subset "${WORK}/HurmitNerdFontMono-Bold.otf" HurmitNerdFontMono-Bold "${CRT_UNICODES}" "${CRT_REQUIRED}"
 subset "${WORK}/OpenDyslexicMNerdFontMono-Regular.otf" OpenDyslexicMNerdFontMono-Regular "${CRT_UNICODES}" "${CRT_REQUIRED}"
-subset "${WORK}/HeavyDataNerdFont-Regular.ttf" HeavyDataNerdFont-Regular "${ETCH_UNICODES}" "${ETCH_REQUIRED}"
 
 {
   echo "# MuConsole font subsets from Nerd Fonts ${NF_VERSION}"
