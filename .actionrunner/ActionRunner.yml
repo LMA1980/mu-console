@@ -78,7 +78,7 @@ tasks:
   miri-data-wire-task:
     tool: "cargo-miri"
     working_dir: "code"
-    args: ["test", "-p", "mu-console-data", "--lib", "--", "::tests::", "--skip", "store::tests::"]
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "api::tests::", "backoff::tests::", "coalesce::tests::", "offline::tests::", "sse::tests::"]
     env:
       CARGO_TARGET_DIR: "target/miri-data-wire"
       TMPDIR: "/var/lib/action-runner/.cache"
@@ -100,7 +100,7 @@ tasks:
   miri-data-engine-a-task:
     tool: "cargo-miri"
     working_dir: "code"
-    args: ["test", "-p", "mu-console-data", "--lib", "--", "--skip", "::tests::", "--skip", "independent_role_lease", "--skip", "live_cluster_nodes", "--skip", "live_fetch_and_sse", "--skip", "live_sse_push", "--skip", "m2_eight_area"]
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "tests::anonymous_", "tests::auth_", "tests::cold_boot_", "tests::deterministic_scenario_", "tests::engine_handles_", "tests::offline_snapshot_", "tests::operator_restart_", "tests::rotary_settle_", "tests::tab_hidden_", "tests::timed_elevation_"]
     env:
       CARGO_TARGET_DIR: "target/miri-data-engine-a"
       TMPDIR: "/var/lib/action-runner/.cache"
@@ -111,7 +111,7 @@ tasks:
   miri-data-engine-b-task:
     tool: "cargo-miri"
     working_dir: "code"
-    args: ["test", "-p", "mu-console-data", "--lib", "--", "--skip", "::tests::", "--skip", "anonymous_bounded_polling", "--skip", "anonymous_lockdown", "--skip", "auth_session_probe", "--skip", "cold_boot_elevated", "--skip", "cold_boot_fails_closed", "--skip", "deterministic_scenario", "--skip", "engine_handles_unknown", "--skip", "offline_snapshot_watermark", "--skip", "operator_restart_job", "--skip", "rotary_settle_debounce", "--skip", "tab_hidden_throttles", "--skip", "timed_elevation_refreshes"]
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "tests::independent_role_", "tests::live_cluster_nodes", "tests::live_fetch_and_sse", "tests::live_sse_push", "tests::m2_eight_area_"]
     env:
       CARGO_TARGET_DIR: "target/miri-data-engine-b"
       TMPDIR: "/var/lib/action-runner/.cache"
