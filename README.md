@@ -9,7 +9,7 @@
 
 ______________________________________________________________________
 
-Unified CI/CD console for **ActionRunner** (continuous integration) and **MuConDe** (continuous delivery). `mu-console` is a technical wireframe UI (`WireframeSkin`, with `HtmlCoreSkin` arriving in Milestone 2) driven by two WebAssembly modules: a UI module on the main thread and a data module in a dedicated Web Worker. It is hosted on `https://console.lma1980.duckdns.org` in parallel with `ActionRunner-web` on `https://hook.lma1980.duckdns.org` (where the GitHub `POST /webhook` endpoint permanently remains) so both clients can be evaluated side-by-side without loss of functionality.
+Unified CI/CD, Observability, Model-Runner, and Platform operations console for **ActionRunner**, **MuConDe**, **MuRegist**, **MuObserve**, and **Jero**. `mu-console` projects a skin-agnostic `ConsoleScene` across two skins—**`HtmlCoreSkin`** (`Html`, default) and **`WireframeSkin`** (optional CRT wireframe on active sessions)—driven by two WebAssembly modules: a UI module on the main thread and a data module in a dedicated Web Worker. It is hosted on `https://console.lma1980.duckdns.org` in parallel with `ActionRunner-web` on `https://hook.lma1980.duckdns.org` (where the GitHub `POST /webhook` endpoint permanently remains) so both clients operate side-by-side without loss of functionality.
 
 See the [design specification](docs/design/README.md).
 
@@ -17,13 +17,13 @@ ______________________________________________________________________
 
 ## Workspace Submodules
 
-| Submodule                              | Target             | Licence                                       | Responsibility                                                                                    |
-| -------------------------------------- | ------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| [`mu-console-protocol`](code/protocol) | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | `UiCommand` / `DataEvent`, view models, versioned postcard codec                                  |
-| [`mu-console-theme`](code/theme)       | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Design tokens, Nerd icon glyph table, font metrics, dependency-free SVG writer, and WireframeSkin |
-| [`mu-console-layout`](code/layout)     | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Breakpoints, frame solver, metric-aware CRT column grid (zero page scroll)                        |
-| [`mu-console-ui`](code/ui)             | wasm (main thread) | AGPL-3.0-only                                 | Unified CI/CD console web frontend (`WireframeSkin` SVG renderer, HTML shell, WASM bootstrap)     |
-| [`mu-console-data`](code/data)         | wasm (worker)      | AGPL-3.0-only                                 | Fetch, SSE client, normalized store, diffing, \<=10 Hz coalescing, offline snapshots              |
+| Submodule                              | Target             | Licence                                       | Responsibility                                                                                        |
+| -------------------------------------- | ------------------ | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [`mu-console-protocol`](code/protocol) | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | `UiCommand` / `DataEvent`, 8-area view models, versioned postcard codec                               |
+| [`mu-console-theme`](code/theme)       | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Skin-agnostic `ConsoleScene`/`DialogModel`, `HtmlCoreSkin`, `WireframeSkin`, CSS tokens, font metrics |
+| [`mu-console-layout`](code/layout)     | native + wasm      | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Breakpoints, frame solver, metric-aware CRT column grid (zero page scroll)                            |
+| [`mu-console-ui`](code/ui)             | wasm (main thread) | AGPL-3.0-only                                 | 8-area fail-closed frontend, passkey/elevation modals, two-skin projection, WASM bootstrap            |
+| [`mu-console-data`](code/data)         | wasm (worker)      | AGPL-3.0-only                                 | Fetch, SSE client, normalized store, folio gating, lease scrubbing, \<=10 Hz coalescing               |
 
 ## Building & Verification
 
@@ -31,10 +31,12 @@ ______________________________________________________________________
 # Pre-PR gate sequence
 (cd code && cargo fmt --all -- --check)
 ./scripts/format_docs.sh --check
+cargo agents plugin validate Symposium.toml --no-check-crates
 (cd code && cargo clippy --workspace --all-targets -- -D warnings)
 (cd code && cargo test --workspace)
-(cd code && cargo check --target wasm32-unknown-unknown -p mu-console-ui -p mu-console-data -p mu-console-protocol -p mu-console-theme)
+(cd code && cargo build --target wasm32-unknown-unknown -p mu-console-ui -p mu-console-data -p mu-console-protocol -p mu-console-theme)
 ./scripts/build-dist.sh
+./scripts/check-dist-freshness.sh
 ```
 
 ### Fonts

@@ -20,6 +20,10 @@ backend = "http://127.0.0.1:8443/api"
 rewrite = "/api/reg"
 
 [[proxy]]
+backend = "http://127.0.0.1:8080/api/mr/v1"
+rewrite = "/api/mr/v1"
+
+[[proxy]]
 backend = "http://127.0.0.1:8000/api"
 rewrite = "/api"
 

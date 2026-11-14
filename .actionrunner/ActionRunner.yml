@@ -53,12 +53,78 @@ tasks:
     timeout_seconds: 1800
     sandbox_profile: "default_ci"
 
-  miri-task:
+  miri-core-task:
     tool: "cargo-miri"
     working_dir: "code"
-    args: ["test", "--workspace", "--lib"]
+    args: ["test", "-p", "mu-console-protocol", "-p", "mu-console-layout", "--lib"]
     env:
-      CARGO_TARGET_DIR: "target"
+      CARGO_TARGET_DIR: "target/miri-core"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-theme-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-theme", "--lib"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-theme"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-wire-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "api::tests::", "backoff::tests::", "coalesce::tests::", "offline::tests::", "sse::tests::"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-data-wire"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-store-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "store::tests::"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-data-store"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-engine-a-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "tests::anonymous_", "tests::auth_", "tests::cold_boot_", "tests::deterministic_scenario_", "tests::engine_handles_", "tests::offline_snapshot_", "tests::operator_restart_", "tests::rotary_settle_", "tests::tab_hidden_", "tests::timed_elevation_"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-data-engine-a"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-engine-b-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "tests::independent_role_", "tests::live_cluster_nodes", "tests::live_fetch_and_sse", "tests::live_sse_push", "tests::m2_eight_area_"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-data-engine-b"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-ui-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-ui", "--lib"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-ui"
       TMPDIR: "/var/lib/action-runner/.cache"
       MIRIFLAGS: "-Zmiri-disable-isolation"
     timeout_seconds: 1800
@@ -141,9 +207,63 @@ stages:
     exclusive: false
     max_concurrent_per_node: 1
 
-  - id: miri-check
-    name: "Verify Safe Execution & Undefined Behavior (cargo miri)"
-    tasks: ["miri-task"]
+  - id: miri-core-check
+    name: "Verify Core Crates Under Miri (protocol, layout)"
+    tasks: ["miri-core-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-theme-check
+    name: "Verify Theme Crate Under Miri (mu-console-theme)"
+    tasks: ["miri-theme-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-wire-check
+    name: "Verify Data Wire & Codec Modules Under Miri"
+    tasks: ["miri-data-wire-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-store-check
+    name: "Verify Data Store Tests Under Miri"
+    tasks: ["miri-data-store-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-engine-a-check
+    name: "Verify Data Engine Shard A Under Miri"
+    tasks: ["miri-data-engine-a-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-engine-b-check
+    name: "Verify Data Engine Shard B Under Miri"
+    tasks: ["miri-data-engine-b-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-ui-check
+    name: "Verify UI Crate Under Miri (mu-console-ui)"
+    tasks: ["miri-ui-task"]
     depends_on: ["test-check"]
     tags: ["test"]
     threads: 6
@@ -177,7 +297,13 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-theme-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
   pull_request:
@@ -188,7 +314,13 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-theme-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
   pullrequest:
@@ -199,7 +331,13 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-theme-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
   merge:
@@ -210,7 +348,13 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-theme-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
   tag:
@@ -221,6 +365,12 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-theme-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check

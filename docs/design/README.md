@@ -1,11 +1,11 @@
 # MuConsole Design Specification
 
-MuConsole is the unified console for **ActionRunner** (continuous integration) and **MuConDe** (continuous delivery). Its architecture centers on four pillars:
+MuConsole is the unified console for **ActionRunner** (continuous integration), **MuConDe** (continuous delivery), **MuRegist**, **MuObserve**, and **Jero**. Its architecture centers on four pillars:
 
-- **`WireframeSkin` (active) and `HtmlCoreSkin` (Milestone 2)**: High-contrast dark-slate (`#0e1116`) technical wireframe theme with cyan (`#00f0ff`) accents, filter-free vector geometry, and semantic status tokens.
-- A **Trainway** view that renders each repository as a railway, with `feat/**` branches as parallel sidings and a CD **integration-test gate** tracker.
-- An **SVG-first component model** (`WireframeSkin`) driven by two WebAssembly modules: a UI module on the main thread and a data module in a dedicated Web Worker.
-- A **no-scroll layout** across desktop viewports (14" laptop and wider) and mobile viewports (phone portrait and compact landscape).
+- **`HtmlCoreSkin` (default) and `WireframeSkin` (active-session optional)**: Skin-agnostic `ConsoleScene` and `DialogModel` projected across high-contrast accessible HTML/DOM chrome (`HtmlCoreSkin`) and crisp filter-free dark-slate (`#0e1116`) CRT SVG (`WireframeSkin`).
+- **Role-gated 8-Area Architecture**: Fail-closed cold boot, mandatory 0-Passkey post-login gate, timed walk-by role elevation (`+role[MM:SS][MM:SS]`), `Dashboard`, `CI`, `CD`, `A|B Deploy`, `Observe`, `Repository`, `Model-Runner`, and `Platform`.
+- **Two-Module WebAssembly Split**: A UI module (`mu-console-ui`) on the main thread and a folio-gating data module (`mu-console-data`) in a dedicated Web Worker.
+- **Zero-Overflow Layout**: Across desktop viewports (14" laptop and wider) and mobile viewports (phone portrait and compact landscape), enforced natively by `mu-console-layout`.
 
 ## 1. Target Viewports & Scroll Budget
 
