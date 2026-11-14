@@ -28,7 +28,9 @@ while IFS= read -r f; do FILES+=("$f"); done < <(
     -not -path "./target/*" \
     -not -path "./dist/*" \
     -not -path "./.venv/*" \
-    -not -path "./.fonts-cache/*" | sort
+    -not -path "./.fonts-cache/*" \
+    -not -path "./code/*" \
+    -not -path "./skills/*" | sort
 )
 
 if [[ "${CHECK_ONLY}" == true ]]; then
