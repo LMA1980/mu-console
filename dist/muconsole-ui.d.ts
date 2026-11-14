@@ -6,17 +6,19 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly main: (a: number, b: number) => number;
-    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___web_sys_308b9bc8eb7111c___features__gen_MouseEvent__MouseEvent______true_: (a: number, b: number, c: any) => void;
-    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___web_sys_308b9bc8eb7111c___features__gen_MouseEvent__MouseEvent______true__1: (a: number, b: number, c: any) => void;
-    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___web_sys_308b9bc8eb7111c___features__gen_MouseEvent__MouseEvent______true__2: (a: number, b: number, c: any) => void;
-    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___web_sys_308b9bc8eb7111c___features__gen_MouseEvent__MouseEvent______true__3: (a: number, b: number, c: any) => void;
-    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___web_sys_308b9bc8eb7111c___features__gen_MouseEvent__MouseEvent______true__4: (a: number, b: number, c: any) => void;
+    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___wasm_bindgen_dff5e0f0e3f3b2c3___JsValue__wasm_bindgen_dff5e0f0e3f3b2c3___JsValue__true_: (a: number, b: number, c: any) => any;
+    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___wasm_bindgen_dff5e0f0e3f3b2c3___JsValue______true_: (a: number, b: number, c: any) => void;
+    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___wasm_bindgen_dff5e0f0e3f3b2c3___JsValue______true__2: (a: number, b: number, c: any) => void;
+    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___wasm_bindgen_dff5e0f0e3f3b2c3___JsValue______true__3: (a: number, b: number, c: any) => void;
+    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___wasm_bindgen_dff5e0f0e3f3b2c3___JsValue______true__4: (a: number, b: number, c: any) => void;
+    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___wasm_bindgen_dff5e0f0e3f3b2c3___JsValue______true__5: (a: number, b: number, c: any) => void;
+    readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke___wasm_bindgen_dff5e0f0e3f3b2c3___JsValue______true__6: (a: number, b: number, c: any) => void;
     readonly wasm_bindgen_dff5e0f0e3f3b2c3___convert__closures_____invoke_______true_: (a: number, b: number) => void;
-    readonly __wbindgen_exn_store: (a: number) => void;
-    readonly __externref_table_alloc: () => number;
-    readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+    readonly __externref_table_alloc: () => number;
+    readonly __wbindgen_externrefs: WebAssembly.Table;
+    readonly __wbindgen_exn_store: (a: number) => void;
     readonly __wbindgen_destroy_closure: (a: number, b: number) => void;
     readonly __wbindgen_start: () => void;
 }

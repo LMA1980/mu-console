@@ -53,10 +53,32 @@ tasks:
     timeout_seconds: 1800
     sandbox_profile: "default_ci"
 
-  miri-task:
+  miri-core-task:
     tool: "cargo-miri"
     working_dir: "code"
-    args: ["test", "--workspace", "--lib"]
+    args: ["test", "-p", "mu-console-protocol", "-p", "mu-console-theme", "-p", "mu-console-layout", "--lib"]
+    env:
+      CARGO_TARGET_DIR: "target"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib"]
+    env:
+      CARGO_TARGET_DIR: "target"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-ui-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-ui", "--lib"]
     env:
       CARGO_TARGET_DIR: "target"
       TMPDIR: "/var/lib/action-runner/.cache"
@@ -141,9 +163,27 @@ stages:
     exclusive: false
     max_concurrent_per_node: 1
 
-  - id: miri-check
-    name: "Verify Safe Execution & Undefined Behavior (cargo miri)"
-    tasks: ["miri-task"]
+  - id: miri-core-check
+    name: "Verify Core Crates Under Miri (protocol, theme, layout)"
+    tasks: ["miri-core-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-check
+    name: "Verify Data Crate Under Miri (mu-console-data)"
+    tasks: ["miri-data-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-ui-check
+    name: "Verify UI Crate Under Miri (mu-console-ui)"
+    tasks: ["miri-ui-task"]
     depends_on: ["test-check"]
     tags: ["test"]
     threads: 6
@@ -177,7 +217,9 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-data-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
   pull_request:
@@ -188,7 +230,9 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-data-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
   pullrequest:
@@ -199,7 +243,9 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-data-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
   merge:
@@ -210,7 +256,9 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-data-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
   tag:
@@ -221,6 +269,8 @@ on_action:
     - build-check
     - test-check
     - coverage-check
-    - miri-check
+    - miri-core-check
+    - miri-data-check
+    - miri-ui-check
     - wasm32-build
     - dist-freshness-check
