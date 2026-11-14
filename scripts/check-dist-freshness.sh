@@ -17,7 +17,7 @@ for f in dist/muconsole-ui_bg.wasm dist/muconsole-data_bg.wasm dist/muconsole-ui
 done
 
 if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    DIST_TS=$(git log -1 --format="%ct" -- dist/muconsole-ui_bg.wasm 2>/dev/null || echo 0)
+    DIST_TS=$(git log -1 --format="%ct" -- dist/muconsole-ui_bg.wasm dist/muconsole-data_bg.wasm dist/muconsole-data_loader.js dist/index.html 2>/dev/null || echo 0)
     UI_TS=$(git log -1 --format="%ct" -- code/ui 2>/dev/null || echo 0)
     DATA_TS=$(git log -1 --format="%ct" -- code/data 2>/dev/null || echo 0)
 
