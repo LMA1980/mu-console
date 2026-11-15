@@ -273,7 +273,11 @@ def run_suite(host: str, port: int) -> bool:
                 (r'src=["\']\./', "Relative script/asset src: src=\"./...\""),
                 (r'url\(["\']?\./', "Relative CSS url: url(\"./...\")"),
                 (r'from\s+["\']\./', "Relative ES module import: from './...'"),
-                (r'init\(["\']\./', "Relative WASM init call: init('./...')"),
+                (r'init\(\s*["\']\./', "Relative WASM init call: init('./...')"),
+                (
+                    r'module_or_path\s*:\s*["\']\./',
+                    "Relative WASM module_or_path: { module_or_path: './...' }",
+                ),
             ]
             found_relatives = []
             for pat, desc in relative_patterns:
