@@ -64,12 +64,34 @@ tasks:
     timeout_seconds: 1800
     sandbox_profile: "default_ci"
 
-  miri-theme-task:
+  miri-theme-core-task:
     tool: "cargo-miri"
     working_dir: "code"
-    args: ["test", "-p", "mu-console-theme", "--lib"]
+    args: ["test", "-p", "mu-console-theme", "--lib", "--", "css::tests::", "glyphs::tests::", "html::tests::", "instruments::switch::tests::", "metrics::tests::", "scene::tests::", "svg::tests::", "tokens::tests::", "wireframe::tests::c2_font_switch_enforces_6px_internal_padding_and_compact_label", "wireframe::tests::wireframe_dialogs_render_zero_overflow_and_modal_semantics", "wireframe::tests::wireframe_skin_emits_zero_decorative_filters_and_valid_controls"]
     env:
-      CARGO_TARGET_DIR: "target/miri-theme"
+      CARGO_TARGET_DIR: "target/miri-theme-core"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-theme-parity-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-theme", "--lib", "--", "wireframe::tests::html_and_wireframe_share_control_id_action_and_disabled_parity"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-theme-parity"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-theme-viewports-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-theme", "--lib", "--", "wireframe::tests::wireframe_scene_renders_deterministically_with_zero_overflow_across_viewports"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-theme-viewports"
       TMPDIR: "/var/lib/action-runner/.cache"
       MIRIFLAGS: "-Zmiri-disable-isolation"
     timeout_seconds: 1800
@@ -216,9 +238,27 @@ stages:
     exclusive: false
     max_concurrent_per_node: 1
 
-  - id: miri-theme-check
-    name: "Verify Theme Crate Under Miri (mu-console-theme)"
-    tasks: ["miri-theme-task"]
+  - id: miri-theme-core-check
+    name: "Verify Theme Core & HTML Modules Under Miri"
+    tasks: ["miri-theme-core-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-theme-parity-check
+    name: "Verify Theme Control Parity Under Miri"
+    tasks: ["miri-theme-parity-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-theme-viewports-check
+    name: "Verify Theme Viewport Overflow Under Miri"
+    tasks: ["miri-theme-viewports-task"]
     depends_on: ["test-check"]
     tags: ["test"]
     threads: 6
@@ -298,7 +338,9 @@ on_action:
     - test-check
     - coverage-check
     - miri-core-check
-    - miri-theme-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
     - miri-data-wire-check
     - miri-data-store-check
     - miri-data-engine-a-check
@@ -315,7 +357,9 @@ on_action:
     - test-check
     - coverage-check
     - miri-core-check
-    - miri-theme-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
     - miri-data-wire-check
     - miri-data-store-check
     - miri-data-engine-a-check
@@ -332,7 +376,9 @@ on_action:
     - test-check
     - coverage-check
     - miri-core-check
-    - miri-theme-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
     - miri-data-wire-check
     - miri-data-store-check
     - miri-data-engine-a-check
@@ -349,7 +395,9 @@ on_action:
     - test-check
     - coverage-check
     - miri-core-check
-    - miri-theme-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
     - miri-data-wire-check
     - miri-data-store-check
     - miri-data-engine-a-check
@@ -366,7 +414,9 @@ on_action:
     - test-check
     - coverage-check
     - miri-core-check
-    - miri-theme-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
     - miri-data-wire-check
     - miri-data-store-check
     - miri-data-engine-a-check
