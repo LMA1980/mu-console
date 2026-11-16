@@ -20,6 +20,7 @@ reverse_proxy = true
 
 provider = "github"
 scope = "user:email read:org"
+approval_prompt = ""
 client_id = "REPLACE_WITH_GITHUB_OAUTH_CLIENT_ID"
 client_secret = "REPLACE_WITH_GITHUB_OAUTH_CLIENT_SECRET"
 redirect_url = "https://console.lma1980.duckdns.org/oauth2/callback"
