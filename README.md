@@ -9,9 +9,22 @@
 
 ______________________________________________________________________
 
-Unified CI/CD, Observability, Model-Runner, and Platform operations console for **ActionRunner**, **MuConDe**, **MuRegist**, **MuObserve**, and **Jero**. `mu-console` projects a skin-agnostic `ConsoleScene` across two skins—**`HtmlCoreSkin`** (`Html`, default) and **`WireframeSkin`** (optional CRT wireframe on active sessions)—driven by two WebAssembly modules: a UI module on the main thread and a data module in a dedicated Web Worker. It is hosted on `https://console.lma1980.duckdns.org` in parallel with `ActionRunner-web` on `https://hook.lma1980.duckdns.org` (where the GitHub `POST /webhook` endpoint permanently remains) so both clients operate side-by-side without loss of functionality.
+Unified CI/CD, Observability, Model-Runner, and Platform operations console for [`mu-ci`](https://github.com/LMA1980/mu-ci), [`mu-cd`](https://github.com/LMA1980/mu-cd), [`mu-registry`](https://github.com/LMA1980/mu-registry), [`mu-observable`](https://github.com/LMA1980/mu-observable), [`mu-auth`](https://github.com/LMA1980/mu-auth), and [`jero-manager`](https://github.com/LMA1980/jero-manager). `mu-console` projects a skin-agnostic `ConsoleScene` across two skins—**`HtmlCoreSkin`** (`Html`, default) and **`WireframeSkin`** (optional CRT wireframe on active sessions)—driven by two WebAssembly modules: a UI module on the main thread and a data module in a dedicated Web Worker. It is hosted on `https://console.lma1980.duckdns.org` in parallel with [`mu-ci-web`](https://github.com/LMA1980/mu-ci-web) on `https://hook.lma1980.duckdns.org` (where the GitHub `POST /webhook` endpoint permanently remains) so both clients operate side-by-side without loss of functionality.
 
 See the [design specification](docs/design/README.md) and the [operator guide](docs/operator-guide.md).
+
+______________________________________________________________________
+
+## Platform Backend Integrations
+
+The 8-area console (`Protocol v8`) integrates with the platform backend services over reverse-proxied REST and SSE endpoints:
+
+- **Identity & RBAC ([`mu-auth`](https://github.com/LMA1980/mu-auth) via [`mu-ci-controller`](https://github.com/LMA1980/mu-ci-controller) `/api/auth/*`)**: Composable `PolicyFolio`s, server-authoritative `RoleLease`s, WebAuthn Passkey enrollment/step-up ceremonies, and `super-operator` final-2m Passkey lease renewal (`POST /api/auth/roles/{id}/renew/start` and `/api/auth/roles/{id}/renew`).
+- **Continuous Integration ([`mu-ci-controller`](https://github.com/LMA1980/mu-ci-controller))**: Repository scorecards, branch/submodule topology, queue state, job detail/logs, and restart/resume controls (`/api/repos*`, `/api/queue`, `/api/jobs/*`, `/api/cluster/nodes`, `/api/events`).
+- **Continuous Delivery & A|B Deploy ([`mu-cd-controller`](https://github.com/LMA1980/mu-cd-controller))**: Ecosystem-agnostic CD runs, deployment history, automated gate telemetry, active leases, and emergency symmetric rollback (`/api/cd/*`).
+- **Artifact Registry ([`mu-registry`](https://github.com/LMA1980/mu-registry))**: Read-only package catalog, canary bundle taint provenance, and CAS storage health (`/api/reg/v1/*`, `/api/v1/registry/*`, `/api/v1/console/*`).
+- **Observability & Subsystem Health ([`mu-observable-hub`](https://github.com/LMA1980/mu-observable-hub))**: Smartscape topology, causal SLO problems, PurePath traces, sanitized logs, golden-signal metrics, 7-subsystem operational status and maintenance overrides, non-destructive monitoring exclusions, and ingress routing/upstream telemetry (`/api/obs/v1/*`).
+- **Model Runner ([`jero-manager`](https://github.com/LMA1980/jero-manager))**: Authenticated resident model status, inference queue telemetry, and OpenAI-compatible API / rootless VPN connection descriptors (`/api/mr/v1/*`).
 
 ______________________________________________________________________
 
