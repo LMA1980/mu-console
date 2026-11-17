@@ -3,7 +3,7 @@
 MuConsole is the unified console for **ActionRunner** (continuous integration), **MuConDe** (continuous delivery), **MuRegist**, **MuObserve**, and **Jero**. Its architecture centers on four pillars:
 
 - **`HtmlCoreSkin` (default) and `WireframeSkin` (active-session optional)**: Skin-agnostic `ConsoleScene` and `DialogModel` projected across high-contrast accessible HTML/DOM chrome (`HtmlCoreSkin`) and crisp filter-free dark-slate (`#0e1116`) CRT SVG (`WireframeSkin`).
-- **Role-gated 8-Area Architecture**: Fail-closed cold boot, mandatory 0-Passkey post-login gate, timed walk-by role elevation (`+role[MM:SS][MM:SS]`), `Dashboard`, `CI`, `CD`, `A|B Deploy`, `Observe`, `Repository`, `Model-Runner`, and `Platform`.
+- **Role-gated 8-Area Architecture**: Fail-closed cold boot, mandatory 0-Passkey post-login gate, timed walk-by role elevation (`+role[MM:SS][MM:SS]`), `Dashboard`, `CI`, `CD`, `A|B Deploy`, `Registry`, `Observability`, `Model Runner`, and `Platform`.
 - **Two-Module WebAssembly Split**: A UI module (`mu-console-ui`) on the main thread and a folio-gating data module (`mu-console-data`) in a dedicated Web Worker.
 - **Zero-Overflow Layout**: Across desktop viewports (14" laptop and wider) and mobile viewports (phone portrait and compact landscape), enforced natively by `mu-console-layout`.
 
@@ -37,28 +37,48 @@ flowchart LR
     NGX --> MCC["MuConDe-controller /api/cd/* (read-only)"]
 ```
 
-| Crate                 | Path            | Target        | Licence                                       | Responsibility                                                                                     |
-| --------------------- | --------------- | ------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `mu-console-protocol` | `code/protocol` | native + wasm | LGPL-3.0-only WITH LGPL-3.0-linking-exception | `UiCommand` / `DataEvent`, view models, postcard codec, protocol version                           |
-| `mu-console-theme`    | `code/theme`    | native + wasm | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Wireframe tokens, Nerd icon glyph table, font metrics, dependency-free SVG writer, `WireframeSkin` |
-| `mu-console-layout`   | `code/layout`   | native + wasm | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Pure solver `solve(viewport, safe_area, area, font) -> Frames`, tested natively for no overflow    |
-| `mu-console-ui`       | `code/ui`       | wasm (main)   | AGPL-3.0-only                                 | Root `<svg>` renderer, HTML shell, components, router, input handling                              |
-| `mu-console-data`     | `code/data`     | wasm (worker) | AGPL-3.0-only                                 | Fetching, SSE parsing, normalized store, diffing, coalescing (≤ 10 Hz), offline cache              |
+| Crate                 | Path            | Target        | Licence                                       | Responsibility                                                                                        |
+| --------------------- | --------------- | ------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `mu-console-protocol` | `code/protocol` | native + wasm | LGPL-3.0-only WITH LGPL-3.0-linking-exception | `UiCommand` / `DataEvent`, view models, postcard codec, protocol version                              |
+| `mu-console-theme`    | `code/theme`    | native + wasm | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Skin-agnostic `ConsoleScene`/`DialogModel`, `HtmlCoreSkin`, `WireframeSkin`, CSS tokens, font metrics |
+| `mu-console-layout`   | `code/layout`   | native + wasm | LGPL-3.0-only WITH LGPL-3.0-linking-exception | Pure solver `solve(viewport, safe_area, area, font) -> Frames`, tested natively for no overflow       |
+| `mu-console-ui`       | `code/ui`       | wasm (main)   | AGPL-3.0-only                                 | 8-area fail-closed frontend, passkey/elevation modals, two-skin projection, WASM bootstrap            |
+| `mu-console-data`     | `code/data`     | wasm (worker) | AGPL-3.0-only                                 | Fetching, SSE parsing, normalized store, diffing, coalescing (≤ 10 Hz), offline cache                 |
 
-### 2.1 Worker protocol
+### 2.1 Worker protocol (`PROTOCOL_VERSION = 8`)
 
-- **UI → Data**: `Subscribe(Route)`, `SelectRepo { repo, submodule }`, `Page { panel, cursor }`, `Retry`, `SetVisibility { hidden }`, `SetCrtFont(font)`. When the tab is hidden, the worker throttles to heartbeat-only.
-- **Data → UI**: `Snapshot(ViewModel)`, `Patch(Vec<Delta>)`, `Connection(ConnState)`, `Error(UiError)`.
+- **UI → Data**: `Configure`, `Subscribe(Route)`, `SelectSubView(SubView)`, `SelectRepo { repo, submodule }`, `Page { panel, cursor }`, `Retry`, `ResetStream`, `SetVisibility { hidden }`, `SetCrtFont(font)`, `SetSkin(skin)`, `RedeemInvite { token }`, `RefreshSession`, `EnableRole`, `DisableRole`, `ElevateWithPasskey`, `RenewRoleWithPasskey`, `LockTimedRoles`, `RecordUserActivity`, `UpdateUserProfile`, `EnrollPasskey`, `RemovePasskey`, `OpenDialog`, `CloseDialog`, CI/CD/maintenance mutations, and Platform RBAC/folio commands. When the tab is hidden, the worker throttles to heartbeat-only.
+- **Data → UI**: `Ready { protocol, source }`, `Snapshot(ViewModel)`, `Patch(Vec<Delta>)`, `Connection(ConnState)`, `Error(UiError)`, `AreaBadges`, `Heartbeat`.
 - Frames are `varint(u32 protocol version) ++ postcard(body)` in transferable `ArrayBuffer`s. A version mismatch is reported as `UiError::VersionMismatch` and shown as a reload banner.
 - SSE runs on `fetch` + `ReadableStream` inside the worker with a hand-written line parser, avoiding `EventSource`-in-worker differences between engines.
 
-### 2.2 Rendering model (`WireframeSkin` SVG + HTML Shell)
+### 2.2 Rendering model (`HtmlCoreSkin` Default + `WireframeSkin` Opt-In)
 
-- One root `<svg>` sized to the viewport inside `#muconsole-dashboard`. Every component is an SVG `<g>` placed at a frame solved by `mu-console-layout`.
-- The HTML accessibility shell (`#muconsole-shell`, `#muconsole-header`) carries the skip-link, the `16px` repo/log filter input (`#muconsole-filter`), operator authentication link (`#muconsole-auth-link`), and `aria-live` status regions (`#muconsole-aria-polite`, `#muconsole-aria-assertive`).
-- Each interactive component `<g>` exposes `data-control-id`, bounding-box metadata (`data-bbox-w`, `data-bbox-h`), `role`, `aria-label`, and `<title>`.
-- Keyboard shortcuts: `[` / `]` switch area; `←` / `→` move the carousel; `/` focuses the filter/selector; `Esc` goes up one breadcrumb level.
-- Dark wireframe is the active visual baseline in Milestone 1, with `HtmlCoreSkin` HTML-first rendering arriving in Milestone 2.
+- `HtmlCoreSkin` (`ConsoleSkin::Html`, default) renders semantic HTML5 chrome, responsive CSS grids, and accessible `<dialog>` modals across `#muconsole-shell`.
+- `WireframeSkin` (`ConsoleSkin::Wireframe`, unlocked on `AuthStatus::Active` sessions via `?skin=wireframe` or `@<user> → Preferences`) projects the same `ConsoleScene` and `DialogModel` into one root `<svg>` inside `#muconsole-dashboard` sized to the viewport, with every component placed at a frame solved by `mu-console-layout`.
+- The HTML accessibility shell (`#muconsole-shell`, `#muconsole-header`) carries the skip-link, the `16px` filter input (`#muconsole-filter`), operator authentication controls (`#muconsole-auth-link`, plus `#muconsole-user-btn` and `#muconsole-roles-btn` on signed-in sessions), and `aria-live` status regions (`#muconsole-aria-polite`, `#muconsole-aria-assertive`).
+- Each interactive component exposes `data-control-id` (and `data-bbox-w`/`data-bbox-h` on SVG frames), `role`, and `aria-label`.
+- Keyboard shortcuts: `1`–`8` switch areas; `←` / `→` move the carousel; `/` focuses `#muconsole-filter`; `Esc` dismisses the active modal or steps up one breadcrumb level.
+
+### 2.3 Authentication, Passkey Enrollment & Role Switching
+
+- **Fail-closed cold boot**: At startup (`AuthStatus::Unresolved`), all 8 area tabs are disabled and zero cached data is rendered until `GET /api/auth/session` resolves. Failed probes display `"Session verification failed"` with `Retry` and `Sign Out` (`/oauth2/sign_out?rd=%2F`).
+- **GitHub OAuth2 & zero-disclosure boundary**: Signed-in requests pass through `oauth2-proxy` + Nginx `auth_request`, forwarding `X-Forwarded-User` and `X-Proxy-Secret`. Unauthenticated (`Anonymous`) and unauthorized (`AuthorizationDenied`) sessions never emit `@<github_login>` or `"invite"` in rendered DOM/SVG. Pending `?invite=<token>` parameters and protected `#/...` deep-link routes are preserved in `sessionStorage` across OAuth redirects (`POST /api/auth/redeem`).
+- **Mandatory 0-Passkey onboarding**: Accounts with `passkey_count == 0` enter `PasskeyEnrollmentRequired`, opening the `"Register Passkey"` modal (`POST /api/auth/passkeys/register/start` → `navigator.credentials.create` → `POST /api/auth/passkeys/register/finish`). Selecting `"Not Now"` or pressing `Escape` dismisses the modal so baseline public `Dashboard` and `CI` views remain browsable when `anonymous_lockdown` is false, while `hdr-user` (`@<user>`) keeps `Passkeys` accessible. Enrolling or removing additional credentials (`passkey_count > 1`) requires a `passkey_manage` WebAuthn step-up assertion.
+- **Role activation classes & bootstrap seeding**:
+  - `PinnedBaseline` (`operator`): Always active after Passkey enrollment; immutable (`Locked Baseline`).
+  - `Elective` (`ci-operator`): Dormant by default; 1-click toggle (`POST /api/auth/roles/{role_id}/{enable,disable}`) without Passkey step-up.
+  - `Timed` (`platform-admin`: `15m` hard / `5m` idle, non-renewable; `super-operator`: `15m` hard / `2m` idle, `1x` `+15m` renewal inside the final `2m`): Activated via WebAuthn Passkey step-up (`POST /api/auth/elevate/{start,finish}`). Server enforces all TTL ceilings; client requests carry zero TTL fields.
+  - Bootstrap administrators seeded via `seed_bootstrap_admins` bind all four canonical roles (`operator`, `ci-operator`, `platform-admin`, `super-operator`).
+- **Header role indicator (`+role[MM:SS][MM:SS]`)**: Top-bar `#muconsole-roles-btn` displays **only active role(s)** within a `120`-character UTF-8 budget (`…(+N)` overflow truncation). Active `Timed` leases append `[seconds_remaining][idle_timer]`. Explicit pointer/keyboard activity resets `idle_timer` locally and emits `POST /api/auth/activity` (throttled to `5s`); SSE ticks never extend idle timers. Reaching `00:00` revokes the expired `Timed` lease, calls `GET /api/auth/session`, and falls back to `#/dashboard/overview` if remaining roles lack access to the active sub-view.
+- **`@<user>` Profile & `Session Roles` modal**:
+  - `@<user> → User Details` renders **Active Roles**, **Dormant Roles** (`AuthState::dormant_role_badges`) directly beneath **Active Roles**, a **`"Manage Session Roles"`** button (`profile-manage-roles`), editable display name, and **`"Lock All Timed Roles"`** (`POST /api/auth/roles/lock`).
+  - `Session Roles` (`+role` / `Manage Session Roles`) hydrates from `GET /api/auth/session` (`bound_role_specs` + `catalog_role_specs`) without requiring `platform:roles.read`, rendering caller-bound roles interactively and unassigned catalog roles as disabled (`"Unassigned"`).
+  - Active renewable `Timed` leases inside their renewal window (`can_renew == true`) expose **`"Renew +15m (Passkey)"`** (`POST /api/auth/roles/{role_id}/renew/start` → `POST /api/auth/roles/{role_id}/renew`) both in a top warning banner and inside `Session Roles`.
+  - Successful `Elective` toggle, `Timed` Passkey elevation/renewal, or `Lock All Timed Roles` auto-closes `Session Roles`. WebAuthn cancellation (`NotAllowedError`/`AbortError`) or HTTP failure keeps `Session Roles` open with an inline `role="alert"` error banner preserved across routine SSE frames.
+- **Dashboard `Overview` split**: Separates `Applications` (7 canonical cards: `Continuous Integration`, `Continuous Delivery`, `A|B Deployment`, `Registry`, `Observability`, `Model Runner`, `Platform` with status-linked borders), `Fleet` (`Cluster Host Nodes`, strictly `AuthStatus::Active && ci:nodes.read`), and `Needs Attention` (strictly `AuthStatus::Active`). Anonymous/denied sessions omit `Fleet`, `Needs Attention`, and attention counts, showing `"Degraded Application Status"` when any application reports `Fail`.
+
+See [docs/operator-guide.md](../operator-guide.md) for the step-by-step operator workflow.
 
 ## 3. `WireframeSkin` Theme & Typography
 

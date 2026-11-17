@@ -11,7 +11,7 @@ ______________________________________________________________________
 
 Unified CI/CD, Observability, Model-Runner, and Platform operations console for **ActionRunner**, **MuConDe**, **MuRegist**, **MuObserve**, and **Jero**. `mu-console` projects a skin-agnostic `ConsoleScene` across two skins—**`HtmlCoreSkin`** (`Html`, default) and **`WireframeSkin`** (optional CRT wireframe on active sessions)—driven by two WebAssembly modules: a UI module on the main thread and a data module in a dedicated Web Worker. It is hosted on `https://console.lma1980.duckdns.org` in parallel with `ActionRunner-web` on `https://hook.lma1980.duckdns.org` (where the GitHub `POST /webhook` endpoint permanently remains) so both clients operate side-by-side without loss of functionality.
 
-See the [design specification](docs/design/README.md).
+See the [design specification](docs/design/README.md) and the [operator guide](docs/operator-guide.md).
 
 ______________________________________________________________________
 
