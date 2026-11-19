@@ -1,0 +1,426 @@
+version: "3"
+name: "mu-console 3-Tier Declarative Pipeline: Hygiene, Build, Test, Coverage & Miri"
+
+env:
+  CARGO_TERM_COLOR: "always"
+
+tasks:
+  fmt-task:
+    tool: "cargo-fmt"
+    working_dir: "code"
+    args: ["--all", "--", "--check"]
+    timeout_seconds: 120
+    sandbox_profile: "default_ci"
+
+  docs-task:
+    tool: "mdformat"
+    args: ["--check", "--wrap", "keep", "README.md", "AGENTS.md", "docs"]
+    timeout_seconds: 120
+    sandbox_profile: "default_ci"
+
+  clippy-task:
+    tool: "cargo-clippy"
+    working_dir: "code"
+    args: ["--workspace", "--all-targets", "--", "-D", "warnings"]
+    timeout_seconds: 600
+    sandbox_profile: "default_ci"
+
+  audit-task:
+    tool: "cargo-audit"
+    working_dir: "code"
+    args: []
+    timeout_seconds: 180
+    sandbox_profile: "default_ci"
+
+  build-task:
+    tool: "cargo-build"
+    working_dir: "code"
+    args: ["--workspace", "--all-targets"]
+    timeout_seconds: 900
+    sandbox_profile: "default_ci"
+
+  test-task:
+    tool: "cargo-test"
+    working_dir: "code"
+    args: ["--workspace"]
+    timeout_seconds: 1200
+    sandbox_profile: "default_ci"
+
+  coverage-task:
+    tool: "cargo-llvm-cov"
+    working_dir: "code"
+    args: ["--workspace", "--summary-only"]
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-core-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-protocol", "-p", "mu-console-layout", "--lib"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-core"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-theme-core-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-theme", "--lib", "--", "css::tests::", "glyphs::tests::", "html::tests::", "instruments::switch::tests::", "metrics::tests::", "scene::tests::", "svg::tests::", "tokens::tests::", "wireframe::tests::c2_font_switch_enforces_6px_internal_padding_and_compact_label", "wireframe::tests::wireframe_dialogs_render_zero_overflow_and_modal_semantics", "wireframe::tests::wireframe_skin_emits_zero_decorative_filters_and_valid_controls"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-theme-core"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-theme-parity-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-theme", "--lib", "--", "wireframe::tests::html_and_wireframe_share_control_id_action_and_disabled_parity"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-theme-parity"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-theme-viewports-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-theme", "--lib", "--", "wireframe::tests::wireframe_scene_renders_deterministically_with_zero_overflow_across_viewports"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-theme-viewports"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-wire-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "api::tests::", "backoff::tests::", "coalesce::tests::", "offline::tests::", "sse::tests::"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-data-wire"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-store-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "store::tests::"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-data-store"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-engine-a-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "tests::anonymous_", "tests::auth_", "tests::cold_boot_", "tests::deterministic_scenario_", "tests::engine_handles_", "tests::offline_snapshot_", "tests::operator_restart_", "tests::rotary_settle_", "tests::tab_hidden_", "tests::timed_elevation_"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-data-engine-a"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-data-engine-b-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-data", "--lib", "--", "tests::independent_role_", "tests::live_cluster_nodes", "tests::live_fetch_and_sse", "tests::live_sse_push", "tests::m2_eight_area_"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-data-engine-b"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  miri-ui-task:
+    tool: "cargo-miri"
+    working_dir: "code"
+    args: ["test", "-p", "mu-console-ui", "--lib"]
+    env:
+      CARGO_TARGET_DIR: "target/miri-ui"
+      TMPDIR: "/var/lib/action-runner/.cache"
+      MIRIFLAGS: "-Zmiri-disable-isolation"
+    timeout_seconds: 1800
+    sandbox_profile: "default_ci"
+
+  wasm-build-task:
+    tool: "cargo-build"
+    working_dir: "code"
+    args: ["--target", "wasm32-unknown-unknown", "-p", "mu-console-ui", "-p", "mu-console-data", "-p", "mu-console-protocol", "-p", "mu-console-theme"]
+    timeout_seconds: 900
+    sandbox_profile: "default_ci"
+
+  dist-freshness-task:
+    tool: "cargo-test"
+    working_dir: "code"
+    args: ["-p", "mu-console-ui", "--test", "ux_gate", "--", "u24_dist_freshness"]
+    timeout_seconds: 300
+    sandbox_profile: "default_ci"
+
+stages:
+  - id: fmt-check
+    name: "Verify Rust Formatting (cargo fmt)"
+    tasks: ["fmt-task"]
+    tags: ["fmt"]
+    threads: 2
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: docs-check
+    name: "Verify Markdown Formatting (mdformat-gfm)"
+    tasks: ["docs-task"]
+    depends_on: ["fmt-check"]
+    tags: ["fmt"]
+    threads: 1
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: clippy-check
+    name: "Verify Rust Linter & Clippy Rules (cargo clippy)"
+    tasks: ["clippy-task"]
+    depends_on: ["fmt-check", "docs-check"]
+    tags: ["clippy"]
+    threads: 4
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: audit-check
+    name: "Verify Dependencies Security Advisories (cargo audit)"
+    tasks: ["audit-task"]
+    depends_on: ["fmt-check"]
+    tags: ["audit"]
+    threads: 2
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: build-check
+    name: "Build Workspace Targets (cargo build)"
+    tasks: ["build-task"]
+    depends_on: ["clippy-check"]
+    tags: ["build"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: test-check
+    name: "Execute Test Suite (cargo test)"
+    tasks: ["test-task"]
+    depends_on: ["build-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: coverage-check
+    name: "Evaluate Line Code Coverage (cargo llvm-cov)"
+    tasks: ["coverage-task"]
+    depends_on: ["test-check", "audit-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-core-check
+    name: "Verify Core Crates Under Miri (protocol, layout)"
+    tasks: ["miri-core-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-theme-core-check
+    name: "Verify Theme Core & HTML Modules Under Miri"
+    tasks: ["miri-theme-core-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-theme-parity-check
+    name: "Verify Theme Control Parity Under Miri"
+    tasks: ["miri-theme-parity-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-theme-viewports-check
+    name: "Verify Theme Viewport Overflow Under Miri"
+    tasks: ["miri-theme-viewports-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-wire-check
+    name: "Verify Data Wire & Codec Modules Under Miri"
+    tasks: ["miri-data-wire-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-store-check
+    name: "Verify Data Store Tests Under Miri"
+    tasks: ["miri-data-store-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-engine-a-check
+    name: "Verify Data Engine Shard A Under Miri"
+    tasks: ["miri-data-engine-a-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-data-engine-b-check
+    name: "Verify Data Engine Shard B Under Miri"
+    tasks: ["miri-data-engine-b-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: miri-ui-check
+    name: "Verify UI Crate Under Miri (mu-console-ui)"
+    tasks: ["miri-ui-task"]
+    depends_on: ["test-check"]
+    tags: ["test"]
+    threads: 6
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: wasm32-build
+    name: "Validate WASM32 Compilation (cargo build --target wasm32-unknown-unknown)"
+    tasks: ["wasm-build-task"]
+    depends_on: ["build-check"]
+    tags: ["build"]
+    threads: 4
+    exclusive: false
+    max_concurrent_per_node: 1
+
+  - id: dist-freshness-check
+    name: "Verify Distribution Freshness (dist/ WASM & Assets)"
+    tasks: ["dist-freshness-task"]
+    depends_on: ["wasm32-build", "test-check"]
+    tags: ["test"]
+    threads: 2
+    exclusive: false
+    max_concurrent_per_node: 1
+
+on_action:
+  push:
+    - fmt-check
+    - docs-check
+    - clippy-check
+    - audit-check
+    - build-check
+    - test-check
+    - coverage-check
+    - miri-core-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
+    - wasm32-build
+    - dist-freshness-check
+  pull_request:
+    - fmt-check
+    - docs-check
+    - clippy-check
+    - audit-check
+    - build-check
+    - test-check
+    - coverage-check
+    - miri-core-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
+    - wasm32-build
+    - dist-freshness-check
+  pullrequest:
+    - fmt-check
+    - docs-check
+    - clippy-check
+    - audit-check
+    - build-check
+    - test-check
+    - coverage-check
+    - miri-core-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
+    - wasm32-build
+    - dist-freshness-check
+  merge:
+    - fmt-check
+    - docs-check
+    - clippy-check
+    - audit-check
+    - build-check
+    - test-check
+    - coverage-check
+    - miri-core-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
+    - wasm32-build
+    - dist-freshness-check
+  tag:
+    - fmt-check
+    - docs-check
+    - clippy-check
+    - audit-check
+    - build-check
+    - test-check
+    - coverage-check
+    - miri-core-check
+    - miri-theme-core-check
+    - miri-theme-parity-check
+    - miri-theme-viewports-check
+    - miri-data-wire-check
+    - miri-data-store-check
+    - miri-data-engine-a-check
+    - miri-data-engine-b-check
+    - miri-ui-check
+    - wasm32-build
+    - dist-freshness-check

@@ -1,5 +1,5 @@
 version: "1"
-service: "muconsole"
+service: "mu-console"
 
 target_nodes:
   - "node-a"
@@ -16,7 +16,7 @@ deployment:
   target_nodes:
     - "node-a"
     - "node-b"
-  web_root: "/var/www/muconsole"
+  web_root: "/var/www/mu-console"
   artifact: "dist"
 
 verification:
