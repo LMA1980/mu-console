@@ -6,6 +6,7 @@ members = [
     "layout",
     "ui",
     "data",
+    "smoke",
 ]
 
 [workspace.package]

@@ -1,0 +1,11 @@
+[package]
+name = "mu-console-smoke"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "Dual-use read-only smoke test suite for served MuConsole HTML/WASM assets and dual-layer caching headers"
+
+[dependencies]
